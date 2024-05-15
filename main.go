@@ -2,9 +2,7 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -47,14 +45,17 @@ func save_data(start, end, comment, action int, sentences []string) ([]string, [
 	action_rows := []string{}
 	for i, row := range sentences {
 		if i > start && i < end {
+			row = string(row[0])
 			start_rows = append(start_rows, row)
 		}
 		if comment != 0 {
 			if i > comment && i < end {
+				row = string(row[0])
 				comment_rows = append(comment_rows, row)
 			}
 		}
 		if i == end+1 {
+			row = string(row[0])
 			end_rows = append(end_rows, row)
 		}
 		if action != 0 {
@@ -70,6 +71,7 @@ func save_data(start, end, comment, action int, sentences []string) ([]string, [
 			}
 		}
 	}
+
 	return start_rows, comment_rows, end_rows, connect_rows, action_rows
 }
 
@@ -91,7 +93,7 @@ func read_file(file_path string) string {
 	return content
 }
 
-func find_next_rooms(current_room string, connect_rows, comment_rows []string) []string {
+func find_connection(current_room string, connect_rows []string) []string {
 	selected_rooms := []string{}
 	result := []string{}
 	for _, row := range connect_rows {
@@ -104,57 +106,21 @@ func find_next_rooms(current_room string, connect_rows, comment_rows []string) [
 			}
 		}
 	}
-	for _, row := range comment_rows {
-		if strings.Contains(selected_rooms[0], string(current_room[0])) {
-			result = append(result, row)
+	for _, row := range selected_rooms {
+		for _, word := range row {
+			if word != '-' && word != ' ' && word != rune(current_room[0]) {
+				result = append(result, string(word))
+			}
 		}
 	}
 	return result
 }
 
-func select_room(rooms []string, target_room string) string {
-	rooms_cor := map[string][2]int{}
-	for _, room := range rooms {
-		room_info := strings.Split(room, " ")
-		room_name := room_info[0]
-		room_x, _ := strconv.Atoi(room_info[1])
-		room_y, _ := strconv.Atoi(room_info[2])
-		rooms_cor[room_name] = [2]int{room_x, room_y}
-	}
-	target_cor := map[string][2]int{}
-	target_info := strings.Split(target_room, " ")
-	target_name := target_info[0]
-	target_x, _ := strconv.Atoi(target_info[1])
-	target_y, _ := strconv.Atoi(target_info[2])
-	target_cor[target_name] = [2]int{target_x, target_y}
-
-	min_distance := math.MaxInt32
-	selected_room := ""
-	for room, cor := range rooms_cor {
-		distance := calculate_distance(cor, target_cor[target_name])
-		if distance < min_distance {
-			min_distance = distance
-			selected_room = room
-		}
-	}
-	fmt.Println("Selected Room: ", selected_room)
-	return selected_room
-}
-
-func calculate_distance(cor1, cor2 [2]int) int {	
-	x1, y1 := cor1[0], cor1[1]
-	x2, y2 := cor2[0], cor2[1]
-	return int(math.Sqrt(math.Pow(float64(x2-x1), 2) + math.Pow(float64(y2-y1), 2)))
-}
-
-func find_road(start_rows, end_rows, connect_rows, comment_rows []string) {
-	for {
-		current_room := start_rows[0]
-		selected_room := select_room(find_next_rooms(current_room, connect_rows, comment_rows), end_rows[0]) // Birden fazla end için seçim ile eklenti yapılmalı
-		current_room = selected_room
-		if current_room == end_rows[0] {
-			fmt.Println("End Room: ", current_room)
-			break
+func find_road_options(start_rows, end_rows, connect_rows []string) {
+	for _, row := range start_rows {
+		connect_rows := find_connection(row, connect_rows)
+		for _, connect_row := range connect_rows {
+			fmt.Println("Room: ", row, " Connect Rows: ", connect_row)
 		}
 	}
 }
@@ -163,7 +129,7 @@ func main() {
 	content := read_file("map_example_1.txt")
 	var start_rows, comment_rows, end_rows, connect_rows, actions_rows []string
 	start_rows, comment_rows, end_rows, connect_rows, actions_rows = save_data(find_start_end_comment(content))
-	/*fmt.Println("Start Rows: ")
+	fmt.Println("Start Rows: ")
 	for _, row := range start_rows {
 		fmt.Println(row)
 	}
@@ -182,7 +148,7 @@ func main() {
 	fmt.Println("Actions Rows: ")
 	for _, row := range actions_rows {
 		fmt.Println(row)
-	}*/
-	find_road(start_rows, end_rows, connect_rows, comment_rows)
-	fmt.Print("Actions: ", actions_rows)
+	}
+	//fmt.Println(find_connection("2", connect_rows))
+	find_road_options(start_rows, end_rows, connect_rows)
 }
