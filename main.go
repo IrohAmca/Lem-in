@@ -6,6 +6,10 @@ import (
 	"strings"
 )
 
+var content string
+var start_rows, comment_rows, end_rows, connect_rows []string
+var roads [][]string
+
 func seperate_rows(data string) []string {
 	return strings.Split(data, "\n")
 }
@@ -37,11 +41,7 @@ func find_start_end_comment(data string) (int, int, int, int, []string) {
 	return result_start, result_end, result_comment, result_actions, sentences
 }
 
-func save_data(start, end, comment, action int, sentences []string) ([]string, []string, []string, []string) {
-	start_rows := []string{}
-	end_rows := []string{}
-	comment_rows := []string{}
-	connect_rows := []string{}
+func save_data(start, end, comment, action int, sentences []string) {
 	for i, row := range sentences {
 		if i > start && i < end { // Add comment checker
 			words := strings.Split(row, " ")
@@ -70,11 +70,9 @@ func save_data(start, end, comment, action int, sentences []string) ([]string, [
 			}
 		}
 	}
-
-	return start_rows, comment_rows, end_rows, connect_rows
 }
 
-func read_file(file_path string) string {
+func read_file(file_path string) {
 	file, err := os.Open(file_path)
 	if err != nil {
 		fmt.Println(err)
@@ -87,12 +85,11 @@ func read_file(file_path string) string {
 		os.Exit(1)
 	}
 
-	content := string(data[:count])
+	 content =string(data[:count])
 	defer file.Close()
-	return content
 }
 
-func find_connection(current_room string, connect_rows []string) []string {
+func find_connection(current_room string) []string {
 	selected_rooms := []string{}
 	for _, row := range connect_rows {
 		if strings.Contains(row, current_room) {
@@ -127,28 +124,26 @@ func loop_handler(room string, road []string) bool {
 	return true
 }
 
-func find_road_recursive(room string, start_rows, end_rows, connect_rows, comment_rows []string, road []string, roads *[][]string) {
+func find_road_recursive(room string, road []string,roads *[][]string) {
 	if check_end_room([]string{room}, end_rows) {
 		*roads = append(*roads, append(road, room))
 		return
 	}
-	connect_rooms := find_connection(room, connect_rows)
+	connect_rooms := find_connection(room)
 	for _, next_room := range connect_rooms {
 		if loop_handler(next_room, road) {
-			find_road_recursive(next_room, start_rows, end_rows, connect_rows, comment_rows, append(road, room), roads)
+			find_road_recursive(next_room, append(road, room), roads)
 		}
 	}
 }
 
-func find_road_options_recursive(start_rows, end_rows, comment_rows, connect_rows []string) [][]string {
-	roads := [][]string{}
+func find_road_options_recursive() {
 	for _, room := range start_rows {
-		find_road_recursive(room, start_rows, end_rows, connect_rows, comment_rows, []string{}, &roads)
+		find_road_recursive(room, []string{}, &roads)
 	}
-	return roads
 }
 
-func write_rooms(start_rows, end_rows, connect_rows, comment_rows []string) {
+func write_rooms() {
 	fmt.Println("Start Rows: ")
 	for _, row := range start_rows {
 		fmt.Println(row)
@@ -168,12 +163,11 @@ func write_rooms(start_rows, end_rows, connect_rows, comment_rows []string) {
 }
 
 func main() {
-	file_path := os.Args[1]
-	content := read_file(file_path)
-	var start_rows, comment_rows, end_rows, connect_rows []string
-	start_rows, comment_rows, end_rows, connect_rows = save_data(find_start_end_comment(content))
+	read_file(os.Args[1])
+	save_data(find_start_end_comment(content))
 
 	//write_rooms(start_rows, end_rows, connect_rows, comment_rows)
 	// fmt.Println(find_connection("2", connect_rows))
-	fmt.Println(find_road_options_recursive(start_rows, end_rows, comment_rows, connect_rows))
+	find_road_options_recursive()
+	fmt.Println(roads)
 }
