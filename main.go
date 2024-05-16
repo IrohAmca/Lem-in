@@ -44,17 +44,20 @@ func save_data(start, end, comment, action int, sentences []string) ([]string, [
 	connect_rows := []string{}
 	for i, row := range sentences {
 		if i > start && i < end {
-			row = string(row[0])
+			words := strings.Split(row, " ")
+			row = words[0]
 			start_rows = append(start_rows, row)
 		}
 		if comment != 0 {
 			if i > comment && i < end {
-				row = string(row[0])
+				words := strings.Split(row, " ")
+				row = words[0]
 				comment_rows = append(comment_rows, row)
 			}
 		}
 		if i == end+1 {
-			row = string(row[0])
+			words := strings.Split(row, " ")
+			row = words[0]
 			end_rows = append(end_rows, row)
 		}
 		if action != 0 {
@@ -93,7 +96,7 @@ func find_connection(current_room string, connect_rows []string) []string {
 	selected_rooms := []string{}
 	result := []string{}
 	for _, row := range connect_rows {
-		if strings.Contains(row, string(current_room[0])) {
+		if strings.Contains(row, current_room) {
 			words := strings.Split(row, " ")
 			for _, word := range words {
 				if word != current_room {
@@ -104,7 +107,7 @@ func find_connection(current_room string, connect_rows []string) []string {
 	}
 	for _, row := range selected_rooms {
 		for _, word := range row {
-			if word != '-' && word != ' ' && word != rune(current_room[0]) {
+			if word != '-' && word != ' ' && string(word) != current_room {
 				result = append(result, string(word))
 			}
 		}
@@ -131,6 +134,7 @@ func loop_handler(room string, road []string) bool {
 	}
 	return true
 }
+
 func find_road_recursive(room string, start_rows, end_rows, connect_rows, comment_rows []string, road []string, roads *[][]string) {
 	if check_end_room([]string{room}, end_rows) {
 		*roads = append(*roads, append(road, room))
@@ -153,28 +157,29 @@ func find_road_options_recursive(start_rows, end_rows, comment_rows, connect_row
 }
 
 func main() {
-	file_path:=os.Args[1]
+	file_path := os.Args[1]
 	content := read_file(file_path)
 	var start_rows, comment_rows, end_rows, connect_rows []string
 	start_rows, comment_rows, end_rows, connect_rows = save_data(find_start_end_comment(content))
 	/*
 		fmt.Println("Start Rows: ")
-		for _, row := range start_rows {
-			fmt.Println(row)
-		}
-		fmt.Println("Comment Rows: ")
-		for _, row := range comment_rows {
-			fmt.Println(row)
-		}
-		fmt.Println("End Rows: ")
-		for _, row := range end_rows {
-			fmt.Println(row)
-		}
-		fmt.Println("Connect Rows: ")
-		for _, row := range connect_rows {
-			fmt.Println(row)
-		}
+			for _, row := range start_rows {
+				fmt.Println(row)
+			}
+			fmt.Println("Comment Rows: ")
+			for _, row := range comment_rows {
+				fmt.Println(row)
+			}
+			fmt.Println("End Rows: ")
+			for _, row := range end_rows {
+				fmt.Println(row)
+			}
+			fmt.Println("Connect Rows: ")
+			for _, row := range connect_rows {
+				fmt.Println(row)
+			}
 	*/
+
 	// fmt.Println(find_connection("2", connect_rows))
 	fmt.Println(find_road_options_recursive(start_rows, end_rows, comment_rows, connect_rows))
 }
