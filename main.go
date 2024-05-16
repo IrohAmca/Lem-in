@@ -153,7 +153,8 @@ func find_road_options_recursive(start_rows, end_rows, comment_rows, connect_row
 }
 
 func main() {
-	content := read_file("map_example_1.txt")
+	file_path:=os.Args[1]
+	content := read_file(file_path)
 	var start_rows, comment_rows, end_rows, connect_rows []string
 	start_rows, comment_rows, end_rows, connect_rows = save_data(find_start_end_comment(content))
 	/*
