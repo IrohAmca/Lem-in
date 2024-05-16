@@ -43,7 +43,7 @@ func save_data(start, end, comment, action int, sentences []string) ([]string, [
 	comment_rows := []string{}
 	connect_rows := []string{}
 	for i, row := range sentences {
-		if i > start && i < end {
+		if i > start && i < end { // Add comment checker
 			words := strings.Split(row, " ")
 			row = words[0]
 			start_rows = append(start_rows, row)
@@ -56,7 +56,7 @@ func save_data(start, end, comment, action int, sentences []string) ([]string, [
 			}
 		}
 		if i == end+1 {
-			words := strings.Split(row, " ")
+			words := strings.Split(row, " ") // Add other end options
 			row = words[0]
 			end_rows = append(end_rows, row)
 		}
@@ -94,10 +94,9 @@ func read_file(file_path string) string {
 
 func find_connection(current_room string, connect_rows []string) []string {
 	selected_rooms := []string{}
-	result := []string{}
 	for _, row := range connect_rows {
 		if strings.Contains(row, current_room) {
-			words := strings.Split(row, " ")
+			words := strings.Split(row, "-")
 			for _, word := range words {
 				if word != current_room {
 					selected_rooms = append(selected_rooms, word)
@@ -105,14 +104,7 @@ func find_connection(current_room string, connect_rows []string) []string {
 			}
 		}
 	}
-	for _, row := range selected_rooms {
-		for _, word := range row {
-			if word != '-' && word != ' ' && string(word) != current_room {
-				result = append(result, string(word))
-			}
-		}
-	}
-	return result
+	return selected_rooms
 }
 
 func check_end_room(option_rooms []string, end_rows []string) bool {
@@ -181,8 +173,7 @@ func main() {
 	var start_rows, comment_rows, end_rows, connect_rows []string
 	start_rows, comment_rows, end_rows, connect_rows = save_data(find_start_end_comment(content))
 
-	write_rooms(start_rows, end_rows, connect_rows, comment_rows)
-	
+	//write_rooms(start_rows, end_rows, connect_rows, comment_rows)
 	// fmt.Println(find_connection("2", connect_rows))
-	//fmt.Println(find_road_options_recursive(start_rows, end_rows, comment_rows, connect_rows))
+	fmt.Println(find_road_options_recursive(start_rows, end_rows, comment_rows, connect_rows))
 }
