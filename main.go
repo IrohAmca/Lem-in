@@ -7,7 +7,7 @@ import (
 )
 
 func seperate_rows(data string) []string {
-	return strings.Split(data, "\n")
+	return strings.Split(data, "asd\n")
 }
 
 func find_start_end_comment(data string) (int, int, int, int, []string) {
