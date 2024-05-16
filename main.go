@@ -116,14 +116,14 @@ func find_connection(current_room string, connect_rows []string) []string {
 }
 
 func check_end_room(option_rooms []string, end_rows []string) bool {
-	for _, room := range option_rooms {
-		for _, end_room := range end_rows {
-			if room == end_room {
-				return true
-			}
-		}
-	}
-	return false
+    for _, room := range option_rooms {
+        for _, end_room := range end_rows {
+            if room == end_room || strings.Split(room, " ")[0] == end_room {
+                return true
+            }
+        }
+    }
+    return false
 }
 
 func loop_handler(room string, road []string) bool {
@@ -161,7 +161,7 @@ func main() {
 	content := read_file(file_path)
 	var start_rows, comment_rows, end_rows, connect_rows []string
 	start_rows, comment_rows, end_rows, connect_rows = save_data(find_start_end_comment(content))
-	/*
+		/*
 		fmt.Println("Start Rows: ")
 			for _, row := range start_rows {
 				fmt.Println(row)
@@ -178,7 +178,7 @@ func main() {
 			for _, row := range connect_rows {
 				fmt.Println(row)
 			}
-	*/
+			*/
 
 	// fmt.Println(find_connection("2", connect_rows))
 	fmt.Println(find_road_options_recursive(start_rows, end_rows, comment_rows, connect_rows))
