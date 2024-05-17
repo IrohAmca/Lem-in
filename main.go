@@ -15,7 +15,7 @@ func seperate_rows(data string) []string {
 }
 
 func find_start_end_comment(data string) (int, int, int, int, []string) {
-	result_start := 0
+	result_start := 0 //a
 	result_end := 0
 	result_comment := 0
 	result_actions := 0
