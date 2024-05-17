@@ -3,19 +3,26 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
-var content string
-var start_rows, comment_rows, end_rows, connect_rows []string
-var roads [][]string
+var (
+	content      string
+	start_room   string
+	end_room     string
+	connect_rows []string
+	comment_rows []string
+	roads        [][]string
+	ant_count    int
+)
 
 func seperate_rows(data string) []string {
 	return strings.Split(data, "\n")
 }
 
 func find_start_end_comment(data string) (int, int, int, int, []string) {
-	result_start := 0 //a
+	result_start := 0
 	result_end := 0
 	result_comment := 0
 	result_actions := 0
@@ -43,22 +50,20 @@ func find_start_end_comment(data string) (int, int, int, int, []string) {
 
 func save_data(start, end, comment, action int, sentences []string) {
 	for i, row := range sentences {
-		if i > start && i < end { // Add comment checker
-			words := strings.Split(row, " ")
-			row = words[0]
-			start_rows = append(start_rows, row)
+		if i == start-1 {
+			ant_count,_ = strconv.Atoi(row)  // Tüm satırı al
 		}
-		if comment != 0 {
-			if i > comment && i < end {
-				words := strings.Split(row, " ")
-				row = words[0]
-				comment_rows = append(comment_rows, row)
-			}
+		if i == start+1 {
+			words := strings.Split(row, " ")
+			start_room = words[0]
+		}
+		if i > start+1 && i < end {
+			words := strings.Split(row, " ")
+			comment_rows = append(comment_rows, words[0])
 		}
 		if i == end+1 {
-			words := strings.Split(row, " ") // Add other end options
-			row = words[0]
-			end_rows = append(end_rows, row)
+			words := strings.Split(row, " ")
+			end_room = words[0]
 		}
 		if action != 0 {
 			if i > end+1 && i < action {
@@ -85,7 +90,7 @@ func read_file(file_path string) {
 		os.Exit(1)
 	}
 
-	 content =string(data[:count])
+	content = string(data[:count])
 	defer file.Close()
 }
 
@@ -104,12 +109,10 @@ func find_connection(current_room string) []string {
 	return selected_rooms
 }
 
-func check_end_room(option_rooms []string, end_rows []string) bool {
+func check_end_room(option_rooms []string) bool {
 	for _, room := range option_rooms {
-		for _, end_room := range end_rows {
-			if room == end_room || strings.Split(room, " ")[0] == end_room {
-				return true
-			}
+		if room == end_room {
+			return true
 		}
 	}
 	return false
@@ -124,41 +127,112 @@ func loop_handler(room string, road []string) bool {
 	return true
 }
 
-func find_road_recursive(room string, road []string,roads *[][]string) {
-	if check_end_room([]string{room}, end_rows) {
-		*roads = append(*roads, append(road, room))
-		return
+func bfs_paths(start_room string) [][]string {
+	visited := make(map[string]bool)
+	queue := [][]string{{start_room}}
+	var paths [][]string
+
+	for len(queue) > 0 {
+		path := queue[0]
+		queue = queue[1:]
+		room := path[len(path)-1]
+
+		if visited[room] {
+			continue
+		}
+		visited[room] = true
+
+		if check_end_room([]string{room}) {
+			paths = append(paths, path)
+			continue
+		}
+
+		for _, next_room := range find_connection(room) {
+			if !visited[next_room] {
+				new_path := make([]string, len(path))
+				copy(new_path, path)
+				new_path = append(new_path, next_room)
+				queue = append(queue, new_path)
+			}
+		}
 	}
-	connect_rooms := find_connection(room)
-	for _, next_room := range connect_rooms {
-		if loop_handler(next_room, road) {
-			find_road_recursive(next_room, append(road, room), roads)
+
+	return paths
+}
+
+func find_all_paths() {
+	roads = append(roads, bfs_paths(start_room)...)
+}
+
+func sort_paths_by_length(paths [][]string) {
+	for i := 0; i < len(paths); i++ {
+		for j := i + 1; j < len(paths); j++ {
+			if len(paths[i]) > len(paths[j]) {
+				paths[i], paths[j] = paths[j], paths[i]
+			}
 		}
 	}
 }
 
-func find_road_options_recursive() {
-	for _, room := range start_rows {
-		find_road_recursive(room, []string{}, &roads)
+func dispatch_ants() {
+	find_all_paths()
+	sort_paths_by_length(roads)
+
+	ant_paths := make([][]string, ant_count)
+	ant_index := 0
+
+	for i := 0; i < ant_count; i++ {
+		ant_paths[i] = roads[ant_index]
+		ant_index++
+		if ant_index >= len(roads) {
+			ant_index = 0
+		}
+	}
+
+	ant_positions := make(map[string][]int)
+	for step := 1; ; step++ {
+		moved := false
+		for i := 0; i < ant_count; i++ {
+			if step < len(ant_paths[i]) {
+				room := ant_paths[i][step]
+				if len(ant_positions[room]) == 0 || !contains(ant_positions[room], i+1) {
+					ant_positions[room] = append(ant_positions[room], i+1)
+					fmt.Printf("L%d-%s ", i+1, room)
+					moved = true
+				}
+			}
+		}
+		if moved {
+			fmt.Println()
+		} else {
+			break
+		}
+		clear_ant_positions(ant_positions, step, ant_paths)
 	}
 }
 
-func write_rooms() {
-	fmt.Println("Start Rows: ")
-	for _, row := range start_rows {
-		fmt.Println(row)
+func contains(slice []int, item int) bool {
+	for _, v := range slice {
+		if v == item {
+			return true
+		}
 	}
-	fmt.Println("Comment Rows: ")
-	for _, row := range comment_rows {
-		fmt.Println(row)
-	}
-	fmt.Println("End Rows: ")
-	for _, row := range end_rows {
-		fmt.Println(row)
-	}
-	fmt.Println("Connect Rows: ")
-	for _, row := range connect_rows {
-		fmt.Println(row)
+	return false
+}
+
+func clear_ant_positions(ant_positions map[string][]int, step int, ant_paths [][]string) {
+	for room := range ant_positions {
+		new_positions := []int{}
+		for _, ant := range ant_positions[room] {
+			if step+1 < len(ant_paths[ant-1]) && ant_paths[ant-1][step+1] == room {
+				new_positions = append(new_positions, ant)
+			}
+		}
+		if len(new_positions) == 0 {
+			delete(ant_positions, room)
+		} else {
+			ant_positions[room] = new_positions
+		}
 	}
 }
 
@@ -166,8 +240,12 @@ func main() {
 	read_file(os.Args[1])
 	save_data(find_start_end_comment(content))
 
-	//write_rooms(start_rows, end_rows, connect_rows, comment_rows)
-	// fmt.Println(find_connection("2", connect_rows))
-	find_road_options_recursive()
+	dispatch_ants()
+
 	fmt.Println(roads)
+	
+	fmt.Println("Start Room", start_room)
+	fmt.Println("Comment Rooms", comment_rows)
+	fmt.Println("Connect Room", connect_rows)
+	fmt.Println("End Room", end_room)
 }
