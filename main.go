@@ -51,7 +51,7 @@ func find_start_end_comment(data string) (int, int, int, int, []string) {
 func save_data(start, end, comment, action int, sentences []string) {
 	for i, row := range sentences {
 		if i == start-1 {
-			ant_count,_ = strconv.Atoi(row)  // Tüm satırı al
+			ant_count, _ = strconv.Atoi(row) // Tüm satırı al
 		}
 		if i == start+1 {
 			words := strings.Split(row, " ")
@@ -128,7 +128,6 @@ func loop_handler(room string, road []string) bool {
 }
 
 func bfs_paths(start_room string) [][]string {
-	visited := make(map[string]bool)
 	queue := [][]string{{start_room}}
 	var paths [][]string
 
@@ -137,18 +136,13 @@ func bfs_paths(start_room string) [][]string {
 		queue = queue[1:]
 		room := path[len(path)-1]
 
-		if visited[room] {
-			continue
-		}
-		visited[room] = true
-
-		if check_end_room([]string{room}) {
+		if room == end_room {
 			paths = append(paths, path)
 			continue
 		}
 
 		for _, next_room := range find_connection(room) {
-			if !visited[next_room] {
+			if loop_handler(next_room, path) {
 				new_path := make([]string, len(path))
 				copy(new_path, path)
 				new_path = append(new_path, next_room)
@@ -178,32 +172,27 @@ func dispatch_ants() {
 	find_all_paths()
 	sort_paths_by_length(roads)
 
+	ant_positions := make(map[string][]int)
 	ant_paths := make([][]string, ant_count)
-	ant_index := 0
-
 	for i := 0; i < ant_count; i++ {
-		ant_paths[i] = roads[ant_index]
-		ant_index++
-		if ant_index >= len(roads) {
-			ant_index = 0
-		}
+		ant_paths[i] = roads[i%len(roads)]
 	}
 
-	ant_positions := make(map[string][]int)
 	for step := 1; ; step++ {
 		moved := false
+		var moves []string
 		for i := 0; i < ant_count; i++ {
 			if step < len(ant_paths[i]) {
 				room := ant_paths[i][step]
 				if len(ant_positions[room]) == 0 || !contains(ant_positions[room], i+1) {
 					ant_positions[room] = append(ant_positions[room], i+1)
-					fmt.Printf("L%d-%s ", i+1, room)
+					moves = append(moves, fmt.Sprintf("L%d-%s", i+1, room))
 					moved = true
 				}
 			}
 		}
 		if moved {
-			fmt.Println()
+			fmt.Println(strings.Join(moves, " "))
 		} else {
 			break
 		}
@@ -238,14 +227,17 @@ func clear_ant_positions(ant_positions map[string][]int, step int, ant_paths [][
 
 func main() {
 	read_file(os.Args[1])
-	save_data(find_start_end_comment(content))
+	start, end, comment, action, sentences := find_start_end_comment(content)
+	save_data(start, end, comment, action, sentences)
 
 	dispatch_ants()
 
-	fmt.Println(roads)
-	
 	fmt.Println("Start Room", start_room)
 	fmt.Println("Comment Rooms", comment_rows)
 	fmt.Println("Connect Room", connect_rows)
 	fmt.Println("End Room", end_room)
+	fmt.Println("Paths:")
+	for _, road := range roads {
+		fmt.Println(road)
+	}
 }
