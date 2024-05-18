@@ -32,9 +32,9 @@ func seperate_rows() {
 func save_data() {
 	seperate_rows()
 	for i, row := range rows {
-		if len(row)== 1{
-			count ,er := strconv.Atoi(row[0])
-			if er == nil {
+		if len(row) == 1 {
+			count, err := strconv.Atoi(row[0])
+			if err == nil {
 				ant_count = count
 			}
 		}
@@ -156,30 +156,37 @@ func sort_paths_by_length(paths [][]string) {
 func dispatch_ants() {
 	find_all_paths()
 	sort_paths_by_length(roads)
+	ant_positions := make(map[int]int)
 	ant_paths := make([][]string, ant_count)
+
 	for i := 0; i < ant_count; i++ {
 		ant_paths[i] = roads[i%len(roads)]
+		ant_positions[i] = 0
 	}
 
-	for step := 0; ; step++ {
-		moved := false
-		var moves []string
-		used_rooms := make(map[string]bool)
+	step := 0
+	for {
+		moves := []string{}
+		occupied_rooms := map[string]bool{}
 		for i := 0; i < ant_count; i++ {
-			if step < len(ant_paths[i]) {
-				room := ant_paths[i][step]
-				if room == start_room || room == end_room || !used_rooms[room] {
-					moves = append(moves, fmt.Sprintf("L%d-%s", i+1, room))
-					used_rooms[room] = true
-					moved = true
+			if ant_positions[i] < len(ant_paths[i])-1 {
+				next_position := ant_positions[i] + 1
+				next_room := ant_paths[i][next_position]
+
+				if !occupied_rooms[next_room] || next_room == start_room || next_room == end_room {
+					occupied_rooms[next_room] = true
+					moves = append(moves, fmt.Sprintf("L%d-%s", i+1, next_room))
+					ant_positions[i] = next_position
 				}
 			}
 		}
-		if moved {
-			fmt.Println(strings.Join(moves, " "))
-		} else {
+
+		if len(moves) == 0 {
 			break
-		} 
+		}
+
+		fmt.Println(strings.Join(moves, " "))
+		step++
 	}
 }
 
