@@ -17,8 +17,8 @@ var (
 	roads        [][]string
 	ant_count    int
 	rows         [][]string
+	step         int
 )
-var step = 0
 
 func seperate_rows() {
 	var temp string
@@ -70,7 +70,7 @@ func read_file(file_path string) {
 func find_connection(current_room string) []string {
 	selected_rooms := []string{}
 	for _, row := range connect_rows {
-		if strings.Contains(row, current_room) {
+		if strings.Contains(row, current_room+"-") || strings.Contains(row, "-"+current_room) {
 			words := strings.Split(row, "-")
 			for _, word := range words {
 				if word != current_room {
@@ -120,28 +120,42 @@ func bfs_paths(start_room string) [][]string {
 
 func find_all_paths() {
 	all_paths := bfs_paths(start_room)
-	unique_paths := [][]string{}
-
-	for _, path := range all_paths {
-		if is_unique_path(path, unique_paths) {
-			unique_paths = append(unique_paths, path)
-		}
-	}
-
-	roads = unique_paths
+	roads = find_max_non_overlapping_paths(all_paths)
 }
 
-func is_unique_path(path []string, paths [][]string) bool {
+func find_max_non_overlapping_paths(paths [][]string) [][]string {
+	max_paths := [][]string{}
+
+	var backtrack func(current_paths [][]string, index int)
+	backtrack = func(current_paths [][]string, index int) {
+		if index == len(paths) {
+			if len(current_paths) > len(max_paths) {
+				max_paths = append([][]string(nil), current_paths...)
+			}
+			return
+		}
+
+		if !is_overlapping(paths[index], current_paths) {
+			backtrack(append(current_paths, paths[index]), index+1)
+		}
+		backtrack(current_paths, index+1)
+	}
+
+	backtrack([][]string{}, 0)
+	return max_paths
+}
+
+func is_overlapping(path []string, paths [][]string) bool {
 	for _, p := range paths {
 		for i := 1; i < len(path)-1; i++ { // Start ve end odalarını hariç tut
 			for j := 1; j < len(p)-1; j++ { // Start ve end odalarını hariç tut
 				if path[i] == p[j] {
-					return false
+					return true
 				}
 			}
 		}
 	}
-	return true
+	return false
 }
 
 func sort_paths_by_length(paths [][]string) {
@@ -164,7 +178,7 @@ func dispatch_ants() {
 		ant_paths[i] = roads[i%len(roads)]
 		ant_positions[i] = 0
 	}
-	step+=1
+	step = 0
 	for {
 		moves := []string{}
 		occupied_rooms := map[string]bool{}
@@ -199,7 +213,7 @@ func main() {
 	fmt.Println("Connect Room", connect_rows)
 	fmt.Println("End Room", end_room)
 	dispatch_ants()
-	fmt.Println("Step:", step-1)
+	fmt.Println("Step:", step)
 	fmt.Println("Paths:")
 	for _, road := range roads {
 		fmt.Println(road)
