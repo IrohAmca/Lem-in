@@ -18,6 +18,7 @@ var (
 	ant_count    int
 	rows         [][]string
 )
+var step = 0
 
 func seperate_rows() {
 	var temp string
@@ -163,8 +164,7 @@ func dispatch_ants() {
 		ant_paths[i] = roads[i%len(roads)]
 		ant_positions[i] = 0
 	}
-
-	step := 0
+	step+=1
 	for {
 		moves := []string{}
 		occupied_rooms := map[string]bool{}
@@ -199,6 +199,7 @@ func main() {
 	fmt.Println("Connect Room", connect_rows)
 	fmt.Println("End Room", end_room)
 	dispatch_ants()
+	fmt.Println("Step:", step-1)
 	fmt.Println("Paths:")
 	for _, road := range roads {
 		fmt.Println(road)
