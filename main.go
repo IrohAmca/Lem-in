@@ -33,7 +33,7 @@ func seperate_rows() {
 func save_data() {
 	seperate_rows()
 	for i, row := range rows {
-		if len(row) == 1 {
+		if len(row) == 1  && row[0] != "##start" && row[0] != "##end"{
 			count, err := strconv.Atoi(row[0])
 			if err == nil {
 				ant_count = count
@@ -56,8 +56,10 @@ func save_data() {
 			connect_rows = append(connect_rows, row[0])
 		}
 	}
+	ErrorHandler(nil)
 }
-
+func ErrorHandler(err error) {
+}
 func read_file(file_path string) {
 	data, err := ioutil.ReadFile(file_path)
 	if err != nil {
@@ -114,7 +116,6 @@ func bfs_paths(start_room string) [][]string {
 			}
 		}
 	}
-
 	return paths
 }
 
@@ -147,8 +148,8 @@ func find_max_non_overlapping_paths(paths [][]string) [][]string {
 
 func is_overlapping(path []string, paths [][]string) bool {
 	for _, p := range paths {
-		for i := 1; i < len(path)-1; i++ { // Start ve end odalarını hariç tut
-			for j := 1; j < len(p)-1; j++ { // Start ve end odalarını hariç tut
+		for i := 1; i < len(path)-1; i++ {
+			for j := 1; j < len(p)-1; j++ {
 				if path[i] == p[j] {
 					return true
 				}
@@ -171,13 +172,31 @@ func sort_paths_by_length(paths [][]string) {
 func dispatch_ants() {
 	find_all_paths()
 	sort_paths_by_length(roads)
-	ant_positions := make(map[int]int)
+
 	ant_paths := make([][]string, ant_count)
+	path_usage := make([]int, len(roads))
 
 	for i := 0; i < ant_count; i++ {
-		ant_paths[i] = roads[i%len(roads)]
+		min_usage_index := 0
+		min_usage_value := path_usage[0] * len(roads[0])
+
+		for j := 1; j < len(roads); j++ {
+			usage_value := path_usage[j] * len(roads[j])
+			if usage_value < min_usage_value {
+				min_usage_index = j
+				min_usage_value = usage_value
+			}
+		}
+
+		ant_paths[i] = roads[min_usage_index]
+		path_usage[min_usage_index]++
+	}
+
+	ant_positions := make(map[int]int)
+	for i := 0; i < ant_count; i++ {
 		ant_positions[i] = 0
 	}
+
 	step = 0
 	for {
 		moves := []string{}
@@ -187,7 +206,7 @@ func dispatch_ants() {
 				next_position := ant_positions[i] + 1
 				next_room := ant_paths[i][next_position]
 
-				if !occupied_rooms[next_room] || next_room == start_room || next_room == end_room {
+				if !occupied_rooms[next_room] || next_room == end_room {
 					occupied_rooms[next_room] = true
 					moves = append(moves, fmt.Sprintf("L%d-%s", i+1, next_room))
 					ant_positions[i] = next_position
@@ -219,3 +238,17 @@ func main() {
 		fmt.Println(road)
 	}
 }
+
+/*
+L1-3 L2-1
+L2-2 L3-3 L4-1
+L2-3 L4-2 L5-3 L6-1
+L4-3 L6-2 L7-3 L8-1
+L6-3 L8-2 L9-3 L10-1
+L8-3 L10-2 L11-3 L12-1
+L10-3 L12-2 L13-3 L14-1
+L12-3 L14-2 L15-3 L16 -1
+L14-3 L16-2 L17-3 L18-1
+L16-3 L18-2 L19-3
+L18-3 L20-3
+*/
