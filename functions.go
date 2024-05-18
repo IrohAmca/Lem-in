@@ -19,34 +19,46 @@ func seperate_rows() {
 
 func save_data() {
 	seperate_rows()
+	start_flag := false
+	end_flag := false
+	connect_flag := false
+	comment_flag := false
+	ant_flag := false
 	for i, row := range rows {
-		if len(row) == 1  && row[0] != "##start" && row[0] != "##end"{
+		if len(row) == 1 && row[0] != "##start" && row[0] != "##end" {
 			count, err := strconv.Atoi(row[0])
 			if err == nil {
 				ant_count = count
+				if ant_count >= 1 {
+					ant_flag=true
+				}
 			}
 		}
 		if row[0] == "##start" {
 			if len(rows[i+1]) == 3 {
 				start_room = rows[i+1][0]
+				start_flag = true
 			}
 		}
 		if row[0] == "##end" {
 			if len(rows[i+1]) == 3 {
 				end_room = rows[i+1][0]
+				end_flag = true
 			}
 		}
 		if len(row) == 3 && row[0] != start_room && row[0] != end_room {
 			comment_rows = append(comment_rows, row[0])
+			comment_flag = true
+
 		}
 		if len(row) == 1 && strings.Contains(row[0], "-") {
 			connect_rows = append(connect_rows, row[0])
+			connect_flag = true
 		}
 	}
-	ErrorHandler(nil)
+	ErrorHandler(start_flag, end_flag, connect_flag, comment_flag, ant_flag)
 }
-func ErrorHandler(err error) {
-}
+
 func read_file(file_path string) {
 	data, err := os.ReadFile(file_path)
 	if err != nil {
