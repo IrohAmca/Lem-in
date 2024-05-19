@@ -50,7 +50,7 @@ The project consists of the following files:
 ### Usage
 
 ```
-go run main.go <file_name>
+go run . <file_name>
 ```
 
 ## Example File Format
