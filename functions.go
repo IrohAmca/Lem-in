@@ -92,39 +92,48 @@ func loop_handler(room string, road []string) bool {
 	}
 	return true
 }
-
-func bfs_paths(start_room string) [][]string {
-	queue := [][]string{{start_room}}
-	var paths [][]string
-	for len(queue) > 0 {
-		path := queue[0]
-		queue = queue[1:]
-		room := path[len(path)-1]
-
-		if room == end_room {
-			paths = append(paths, path)
-			continue
+func find_road_recursive(room string, road []string, roads *[][]string) {
+	if room == end_room{
+		*roads = append(*roads, append(road, room))
+		return
+	}
+	connect_rooms := find_connection(room)
+	for _, next_room := range connect_rooms {
+		if loop_handler(next_room, road) {
+			find_road_recursive(next_room, append(road, room), roads)
 		}
-
-		for _, next_room := range find_connection(room) {
-			if loop_handler(next_room, path) {
-				new_path := make([]string, len(path))
-				copy(new_path, path)
-				new_path = append(new_path, next_room)
-				queue = append(queue, new_path)
+	}
+}
+func is_same_road(road []string, roads [][]string) bool {
+	for _, r := range roads {
+		if len(r) == len(road) {
+			same := true
+			for i := 0; i < len(road); i++ {
+				if road[i] != r[i] {
+					same = false
+					break
+				}
+			}
+			if same {
+				return true
 			}
 		}
 	}
-	if len(paths) == 0 {
-		fmt.Println("ERROR: invalid data format")
-		os.Exit(1)
-	}
-	return paths
+	return false
 }
-
+func delete_same_roads(roads [][]string) [][]string {
+	unique_roads := [][]string{}
+	for _, road := range roads {
+		if !is_same_road(road, unique_roads) {
+			unique_roads = append(unique_roads, road)
+		}
+	}
+	return unique_roads
+}
 func find_all_paths() {
-	all_paths := bfs_paths(start_room)
-	roads = find_max_non_overlapping_paths(all_paths)
+	find_road_recursive(start_room, []string{}, &roads)
+	roads = find_max_non_overlapping_paths(sort_paths_by_length(roads))
+	roads = delete_same_roads(roads)
 }
 
 func find_max_non_overlapping_paths(paths [][]string) [][]string {
@@ -162,7 +171,7 @@ func is_overlapping(path []string, paths [][]string) bool {
 	return false
 }
 
-func sort_paths_by_length(paths [][]string) {
+func sort_paths_by_length(paths [][]string) [][]string{
 	for i := 0; i < len(paths); i++ {
 		for j := i + 1; j < len(paths); j++ {
 			if len(paths[i]) > len(paths[j]) {
@@ -170,11 +179,11 @@ func sort_paths_by_length(paths [][]string) {
 			}
 		}
 	}
+	return paths
 }
 
 func dispatch_ants() {
 	find_all_paths()
-	sort_paths_by_length(roads)
 
 	ant_paths := make([][]string, ant_count)
 	path_usage := make([]int, len(roads))
