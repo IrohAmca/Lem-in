@@ -19,6 +19,10 @@ var (
 
 
 func main() {
+	if len(os.Args) != 2 {
+		fmt.Println("Usage: go run . <map_file>")
+		os.Exit(1)
+	}
 	read_file(os.Args[1])
 	save_data()
 	dispatch_ants()
