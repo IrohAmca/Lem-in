@@ -4,35 +4,46 @@ This project enables ants to find the shortest path from a starting point to an 
 
 ## Project Structure
 
-The project consists of the following files:
+The project consists of the following files and folder:
 
-- `main.go`: Main code file. Contains the ant pathfinding and distribution algorithms.
+- `main.go`: Main file. Contains the main function and the functions used in the project.
 - `main_test.go`: Unit test file. Contains tests to ensure the functions work correctly.
-- `example02.txt`: Test file. Contains path information and the number of ants.
+- `functions.go` : Contains the functions used in the main file.
+- `errors_handler.go` : Contains the error handling functions.
+- `maps`: Contains the example files used in the project.
 
 ## Usage
 
 ### Functions in `main.go`
 
+1. `main`: Reads the file, finds the paths, and distributes the ants.
+
+### Functions in `main_test.go`
+
+1. `TestFindConnection`: Tests the `find_connection` function.
+2. `TestLoopHandler`: Tests the `loop_handler` function.
+3. `TestDfsPaths`: Tests the `find_road_recursive` function.
+4. `TestFindAllPaths`: Tests the `find_all_paths` function.
+5. `TestIsOverlapping`: Tests the `is_overlapping` function.
+6. `TestFindMaxNonOverlappingPaths`: Tests the `find_max_non_overlapping_paths` function.
+7. `TestSortPathsByLength`: Tests the `sort_paths_by_length` function.
+8. `TestDispatchAnts`: Tests the `dispatch_ants` function and verifies the outputs.
+
+### Functions in `functions.go`
+
 1. `find_connection`: Finds the connections of a room.
 2. `loop_handler`: Checks if a room is in a path.
-3. `bfs_paths`: Uses Breadth-First Search (BFS) algorithm to find all paths from the start room to the end room.
+3. `find_road_recursive`: Uses Breadth-First Search (BFS) algorithm to find all paths from the start room to the end room.
 4. `find_all_paths`: Finds all paths and selects the maximum number of non-overlapping paths.
 5. `find_max_non_overlapping_paths`: Finds the maximum number of non-overlapping paths.
 6. `is_overlapping`: Checks if two paths overlap.
 7. `sort_paths_by_length`: Sorts paths by their lengths.
 8. `dispatch_ants`: Distributes and moves ants along the paths.
 
-### Functions in `main_test.go`
+### Functions in `errors_handler.go`
 
-1. `TestFindConnection`: Tests the `find_connection` function.
-2. `TestLoopHandler`: Tests the `loop_handler` function.
-3. `TestBfsPaths`: Tests the `bfs_paths` function.
-4. `TestFindAllPaths`: Tests the `find_all_paths` function.
-5. `TestIsOverlapping`: Tests the `is_overlapping` function.
-6. `TestFindMaxNonOverlappingPaths`: Tests the `find_max_non_overlapping_paths` function.
-7. `TestSortPathsByLength`: Tests the `sort_paths_by_length` function.
-8. `TestDispatchAnts`: Tests the `dispatch_ants` function and verifies the outputs.
+1. `Contains_Error`: Checks if input file contains wrong format.
+2. `True_Format_Error`: Formats the error message.
 
 ## Setup and Running
 
