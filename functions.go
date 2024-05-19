@@ -56,7 +56,8 @@ func save_data() {
 			connect_flag = true
 		}
 	}
-	ErrorHandler(start_flag, end_flag, connect_flag, comment_flag, ant_flag)
+	Contains_Error(start_flag, end_flag, connect_flag, comment_flag, ant_flag)
+	True_Format_Error()
 }
 
 func read_file(file_path string) {
@@ -95,7 +96,6 @@ func loop_handler(room string, road []string) bool {
 func bfs_paths(start_room string) [][]string {
 	queue := [][]string{{start_room}}
 	var paths [][]string
-
 	for len(queue) > 0 {
 		path := queue[0]
 		queue = queue[1:]
@@ -114,6 +114,10 @@ func bfs_paths(start_room string) [][]string {
 				queue = append(queue, new_path)
 			}
 		}
+	}
+	if len(paths) == 0 {
+		fmt.Println("ERROR: invalid data format")
+		os.Exit(1)
 	}
 	return paths
 }

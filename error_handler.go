@@ -28,30 +28,6 @@ func Contains_Error(start_flag, end_flag, connect_flag, comment_flag, ant_flag b
 	}
 }
 
-
-func Connection_Error() {
-	start_connect_flag := false
-	end_connect_flag := false
-	for _, rows := range connect_rows {
-		for _, row := range strings.Split(rows, "-") {
-			if start_room == row {
-				start_connect_flag = true
-			}
-			if end_room == row {
-				end_connect_flag = true
-			}
-			if !start_connect_flag {
-				fmt.Println("Start room is not connected")
-				os.Exit(1)
-			}
-			if !end_connect_flag {
-				fmt.Println("End room is not connected")
-				os.Exit(1)
-			}
-		}
-	}
-}
-
 func True_Format_Error() {
 	all_rooms := append(comment_rows, start_room, end_room)
 
@@ -61,9 +37,4 @@ func True_Format_Error() {
 			os.Exit(1)
 		}
 	}
-}
-func ErrorHandler(start_flag, end_flag, connect_flag, comment_flag, ant_flag bool) {
-	Contains_Error(start_flag, end_flag, connect_flag, comment_flag, ant_flag)
-	// Connection_Error()
-	True_Format_Error()
 }
