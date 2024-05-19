@@ -132,6 +132,10 @@ func delete_same_roads(roads [][]string) [][]string {
 }
 func find_all_paths() {
 	find_road_recursive(start_room, []string{}, &roads)
+	if roads == nil {
+		fmt.Println("ERROR: No path found")
+		os.Exit(1)
+	}
 	roads = find_max_non_overlapping_paths(sort_paths_by_length(roads))
 	roads = delete_same_roads(roads)
 }

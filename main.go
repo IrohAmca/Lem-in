@@ -21,12 +21,12 @@ var (
 func main() {
 	read_file(os.Args[1])
 	save_data()
+	dispatch_ants()
 	fmt.Println("Ant Count", ant_count)
 	fmt.Println("Start Room", start_room)
 	fmt.Println("Comment Rooms", comment_rows)
 	fmt.Println("Connect Room", connect_rows)
 	fmt.Println("End Room", end_room)
-	dispatch_ants()
 	fmt.Println("Step:", step)
 	fmt.Println("Paths:")
 	for _, road := range roads {
